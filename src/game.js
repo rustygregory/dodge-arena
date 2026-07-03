@@ -30,7 +30,7 @@ export class Game {
     this.obstacleManager = new ObstacleManager();
 
     this.state = 'TITLE';
-    this.playerCount = 2;
+    this.playerCount = 1;
     this.difficultyIndex = 0;
     this.menuSelection = 0;
 
