@@ -22,7 +22,9 @@ function getContext() {
 export function resumeAudio() {
   const ctx = getContext();
   if (ctx.state === 'suspended') {
-    ctx.resume();
+    ctx.resume().then(() => {
+      if (!musicPlaying) startMusic();
+    });
   }
 }
 
