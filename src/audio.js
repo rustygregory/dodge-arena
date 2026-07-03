@@ -25,6 +25,8 @@ export function resumeAudio() {
     ctx.resume().then(() => {
       if (!musicPlaying) startMusic();
     });
+  } else {
+    if (!musicPlaying) startMusic();
   }
 }
 
@@ -46,7 +48,15 @@ export function setMusicTempo(tempo) {
 export function startMusic() {
   if (musicPlaying) return;
   const ctx = getContext();
-  if (ctx.state === 'suspended') return;
+  if (ctx.state === 'suspended') {
+    ctx.resume().then(() => {
+      if (!musicPlaying) {
+        musicPlaying = true;
+        scheduleMusic();
+      }
+    });
+    return;
+  }
   musicPlaying = true;
   scheduleMusic();
 }
