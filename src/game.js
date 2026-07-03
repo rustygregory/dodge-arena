@@ -437,6 +437,10 @@ export class Game {
   }
 
   updateRoundEnd() {
+    if (input.wasPressed('Backspace') || input.wasPressed('Delete')) {
+      this.state = 'TITLE';
+      return;
+    }
     if (input.wasPressed('Enter')) {
       if (this.currentRound >= TOTAL_ROUNDS) {
         this.state = 'MATCH_END';

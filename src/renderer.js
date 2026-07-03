@@ -580,7 +580,8 @@ export class Renderer {
 
     ctx.fillStyle = '#888888';
     ctx.font = '16px monospace';
-    ctx.fillText('Press ENTER to continue', CANVAS_WIDTH / 2, 500);
+    ctx.fillText('Press ENTER to continue', CANVAS_WIDTH / 2, 490);
+    ctx.fillText('Press DELETE to start over', CANVAS_WIDTH / 2, 515);
 
     ctx.restore();
   }
