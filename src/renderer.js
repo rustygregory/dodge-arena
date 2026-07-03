@@ -475,7 +475,7 @@ export class Renderer {
 
     ctx.font = '16px monospace';
     ctx.fillStyle = '#888888';
-    ctx.fillText('W/S to switch • A/D to change • ENTER to start', CANVAS_WIDTH / 2, 450);
+    ctx.fillText('Arrows to navigate • ENTER to start', CANVAS_WIDTH / 2, 450);
 
     ctx.restore();
   }
@@ -541,7 +541,7 @@ export class Renderer {
         ctx.fillStyle = '#888888';
         ctx.font = '12px monospace';
         const keys = p === 0 ? 'A/D' : p === 1 ? 'J/L' : '←/→';
-        ctx.fillText(`${keys} to pick • ENTER to confirm`, CANVAS_WIDTH / 2, baseY + 75);
+        ctx.fillText(`${keys} or ←/→ to pick • ENTER to confirm • DEL to go back`, CANVAS_WIDTH / 2, baseY + 75);
       }
     }
 

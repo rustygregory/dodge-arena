@@ -152,25 +152,25 @@ export class Game {
   }
 
   updateTitle() {
-    if (input.wasPressed('w') || input.wasPressed('W')) {
+    if (input.wasPressed('w') || input.wasPressed('W') || input.wasPressed('ArrowUp')) {
       this.menuSelection = (this.menuSelection + 1) % 2;
     }
-    if (input.wasPressed('s') || input.wasPressed('S')) {
+    if (input.wasPressed('s') || input.wasPressed('S') || input.wasPressed('ArrowDown')) {
       this.menuSelection = (this.menuSelection + 1) % 2;
     }
 
     if (this.menuSelection === 0) {
-      if (input.wasPressed('a') || input.wasPressed('A')) {
+      if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
         this.playerCount = Math.max(1, this.playerCount - 1);
       }
-      if (input.wasPressed('d') || input.wasPressed('D')) {
+      if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
         this.playerCount = Math.min(3, this.playerCount + 1);
       }
     } else {
-      if (input.wasPressed('a') || input.wasPressed('A')) {
+      if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
         this.difficultyIndex = (this.difficultyIndex + DIFFICULTY_KEYS.length - 1) % DIFFICULTY_KEYS.length;
       }
-      if (input.wasPressed('d') || input.wasPressed('D')) {
+      if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
         this.difficultyIndex = (this.difficultyIndex + 1) % DIFFICULTY_KEYS.length;
       }
     }
@@ -187,6 +187,15 @@ export class Game {
   }
 
   updateColorSelect() {
+    if (input.wasPressed('Backspace') || input.wasPressed('Delete')) {
+      if (this.currentColorPlayer > 0) {
+        this.currentColorPlayer--;
+      } else {
+        this.state = 'TITLE';
+      }
+      return;
+    }
+
     const p = this.currentColorPlayer;
     const keys = p === 0 ? ['a', 'd'] : p === 1 ? ['j', 'l'] : ['ArrowLeft', 'ArrowRight'];
 
@@ -194,6 +203,14 @@ export class Game {
       this.cycleColor(p, -1);
     }
     if (input.wasPressed(keys[1]) || input.wasPressed(keys[1].toUpperCase())) {
+      this.cycleColor(p, 1);
+    }
+
+    // Arrow keys also cycle for any player
+    if (input.wasPressed('ArrowLeft')) {
+      this.cycleColor(p, -1);
+    }
+    if (input.wasPressed('ArrowRight')) {
       this.cycleColor(p, 1);
     }
 
