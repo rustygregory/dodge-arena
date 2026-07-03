@@ -223,13 +223,17 @@ export class Game {
   }
 
   cycleColor(playerIdx, direction) {
-    const taken = this.colorSelections.filter((_, i) => i !== playerIdx && i < this.playerCount);
     let current = this.colorSelections[playerIdx];
-    let attempts = 0;
-    do {
+    if (this.playerCount === 1) {
       current = (current + direction + COLOR_NAMES.length) % COLOR_NAMES.length;
-      attempts++;
-    } while (taken.includes(current) && attempts < COLOR_NAMES.length);
+    } else {
+      const taken = this.colorSelections.filter((_, i) => i !== playerIdx && i < this.playerCount);
+      let attempts = 0;
+      do {
+        current = (current + direction + COLOR_NAMES.length) % COLOR_NAMES.length;
+        attempts++;
+      } while (taken.includes(current) && attempts < COLOR_NAMES.length);
+    }
     this.colorSelections[playerIdx] = current;
   }
 
