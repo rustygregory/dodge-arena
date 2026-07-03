@@ -511,7 +511,7 @@ export class Renderer {
         const cx = startX + i * 50;
         const cy = baseY + 40;
         const color = COLORS[COLOR_NAMES[i]];
-        const taken = selections.some((s, idx) => idx !== p && s === i);
+        const taken = playerCount > 1 && selections.some((s, idx) => idx !== p && idx < playerCount && s === i);
         const selected = selections[p] === i;
 
         ctx.beginPath();

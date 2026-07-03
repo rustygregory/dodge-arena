@@ -239,7 +239,7 @@ export class Game {
       const colorName = COLOR_NAMES[this.colorSelections[i]];
       const color = COLORS[colorName];
       const pos = SPAWN_POSITIONS[i];
-      const player = new Player(i, color, pos.x, pos.y);
+      const player = new Player(i, color, pos.x, pos.y, this.playerCount === 1);
       player.totalScore = 0;
       this.players.push(player);
     }

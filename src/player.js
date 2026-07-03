@@ -2,7 +2,7 @@ import { PLAYER_RADIUS, PLAYER_SPEED, CANVAS_WIDTH, CANVAS_HEIGHT, KEYBINDINGS }
 import { input } from './input.js';
 
 export class Player {
-  constructor(index, color, x, y) {
+  constructor(index, color, x, y, singlePlayer = false) {
     this.index = index;
     this.color = color;
     this.x = x;
@@ -14,6 +14,7 @@ export class Player {
     this.opacity = 1;
     this.fadeTimer = 0;
     this.keys = KEYBINDINGS[index];
+    this.singlePlayer = singlePlayer;
   }
 
   update(dt) {
@@ -26,10 +27,10 @@ export class Player {
     let dx = 0;
     let dy = 0;
 
-    if (input.isDown(this.keys.up)) dy -= 1;
-    if (input.isDown(this.keys.down)) dy += 1;
-    if (input.isDown(this.keys.left)) dx -= 1;
-    if (input.isDown(this.keys.right)) dx += 1;
+    if (input.isDown(this.keys.up) || (this.singlePlayer && input.isDown('ArrowUp'))) dy -= 1;
+    if (input.isDown(this.keys.down) || (this.singlePlayer && input.isDown('ArrowDown'))) dy += 1;
+    if (input.isDown(this.keys.left) || (this.singlePlayer && input.isDown('ArrowLeft'))) dx -= 1;
+    if (input.isDown(this.keys.right) || (this.singlePlayer && input.isDown('ArrowRight'))) dx += 1;
 
     if (dx !== 0 && dy !== 0) {
       const diag = 1 / Math.SQRT2;
