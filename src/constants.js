@@ -28,9 +28,10 @@ export const DIFFICULTY = {
   normal: { duration: 60, label: 'Normal' },
   hard: { duration: 90, label: 'Hard' },
   nightmare: { duration: 120, label: 'Nightmare' },
+  ghost: { duration: 120, label: 'Ghost' },
 };
 
-export const DIFFICULTY_KEYS = ['normal', 'hard', 'nightmare'];
+export const DIFFICULTY_KEYS = ['normal', 'hard', 'nightmare', 'ghost'];
 
 export const TOTAL_ROUNDS = 5;
 

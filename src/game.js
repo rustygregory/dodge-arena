@@ -19,6 +19,7 @@ import {
   playElimination, playRoundStart, playRoundEnd,
   resumeAudio, startMusic, stopMusic,
   getMusicVolume, setMusicVolume, setMusicTempo,
+  getMusicTrack, setMusicTrack,
 } from './audio.js';
 
 export class Game {
@@ -110,7 +111,7 @@ export class Game {
   render(dt) {
     switch (this.state) {
       case 'TITLE':
-        this.renderer.drawTitleScreen(this.playerCount, this.difficultyIndex);
+        this.renderer.drawTitleScreen(this.playerCount, this.difficultyIndex, this.menuSelection, getMusicTrack(), getMusicVolume());
         break;
       case 'COLOR_SELECT':
         this.renderer.drawColorSelect(this.players, this.playerCount, this.colorSelections, this.currentColorPlayer);
@@ -125,7 +126,11 @@ export class Game {
         this.renderer.clear();
         this.renderer.drawBackground(dt);
         this.renderer.drawObstacles(this.obstacleManager.getObstacles());
+        if (DIFFICULTY_KEYS[this.difficultyIndex] === 'ghost') {
+          this.ctx.globalAlpha = 0.4;
+        }
         for (const p of this.players) this.renderer.drawPlayer(p);
+        this.ctx.globalAlpha = 1;
         this.renderer.drawHUD(this.elapsed, this.players, this.currentRound, DIFFICULTY_KEYS[this.difficultyIndex]);
         break;
       case 'PAUSED':
@@ -134,7 +139,7 @@ export class Game {
         this.renderer.drawObstacles(this.obstacleManager.getObstacles());
         for (const p of this.players) this.renderer.drawPlayer(p);
         this.renderer.drawHUD(this.elapsed, this.players, this.currentRound, DIFFICULTY_KEYS[this.difficultyIndex]);
-        this.renderer.drawPauseMenu(this.pauseSelection, getMusicVolume());
+        this.renderer.drawPauseMenu(this.pauseSelection, getMusicVolume(), getMusicTrack());
         break;
       case 'ROUND_END':
         this.renderer.drawRoundEnd(this.players, this.currentRound);
@@ -153,10 +158,10 @@ export class Game {
 
   updateTitle() {
     if (input.wasPressed('w') || input.wasPressed('W') || input.wasPressed('ArrowUp')) {
-      this.menuSelection = (this.menuSelection + 1) % 2;
+      this.menuSelection = (this.menuSelection + 3) % 4;
     }
     if (input.wasPressed('s') || input.wasPressed('S') || input.wasPressed('ArrowDown')) {
-      this.menuSelection = (this.menuSelection + 1) % 2;
+      this.menuSelection = (this.menuSelection + 1) % 4;
     }
 
     if (this.menuSelection === 0) {
@@ -166,12 +171,26 @@ export class Game {
       if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
         this.playerCount = Math.min(3, this.playerCount + 1);
       }
-    } else {
+    } else if (this.menuSelection === 1) {
       if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
         this.difficultyIndex = (this.difficultyIndex + DIFFICULTY_KEYS.length - 1) % DIFFICULTY_KEYS.length;
       }
       if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
         this.difficultyIndex = (this.difficultyIndex + 1) % DIFFICULTY_KEYS.length;
+      }
+    } else if (this.menuSelection === 2) {
+      if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
+        setMusicTrack((getMusicTrack() + 3) % 4);
+      }
+      if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
+        setMusicTrack((getMusicTrack() + 1) % 4);
+      }
+    } else if (this.menuSelection === 3) {
+      if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
+        setMusicVolume(getMusicVolume() - 0.1);
+      }
+      if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight')) {
+        setMusicVolume(getMusicVolume() + 0.1);
       }
     }
 
@@ -206,12 +225,13 @@ export class Game {
       this.cycleColor(p, 1);
     }
 
-    // Arrow keys also cycle for any player
-    if (input.wasPressed('ArrowLeft')) {
-      this.cycleColor(p, -1);
-    }
-    if (input.wasPressed('ArrowRight')) {
-      this.cycleColor(p, 1);
+    if (p !== 2) {
+      if (input.wasPressed('ArrowLeft')) {
+        this.cycleColor(p, -1);
+      }
+      if (input.wasPressed('ArrowRight')) {
+        this.cycleColor(p, 1);
+      }
     }
 
     if (input.wasPressed('Enter') || input.wasPressed(' ')) {
@@ -257,6 +277,7 @@ export class Game {
     this.obstacleManager.reset(difficulty, this.currentRound);
     this.elapsed = 0;
     this.scoreAccumulator = 0;
+    this.lastSurvivor = null;
 
     for (let i = 0; i < this.players.length; i++) {
       this.players[i].reset(SPAWN_POSITIONS[i].x, SPAWN_POSITIONS[i].y);
@@ -292,7 +313,7 @@ export class Game {
     this.elapsed += dt;
 
     const progress = Math.min(1, this.elapsed / duration);
-    if (difficulty === 'nightmare') {
+    if (difficulty === 'nightmare' || difficulty === 'ghost') {
       setMusicTempo(1.4 + progress * 0.8);
     } else if (difficulty === 'hard') {
       setMusicTempo(1.0 + progress * 0.6);
@@ -313,13 +334,17 @@ export class Game {
     }
 
     this.obstacleManager.update(dt);
-    this.checkCollisions();
+    if (difficulty !== 'ghost') {
+      this.checkCollisions();
+    }
 
-    const alive = this.players.filter(p => p.alive);
-    if (alive.length === 0 || this.elapsed >= duration) {
+    if (this.elapsed >= duration) {
       this.endRound();
-    } else if (this.playerCount > 1 && alive.length === 1) {
-      this.endRound();
+    } else if (difficulty !== 'ghost') {
+      const alive = this.players.filter(p => p.alive);
+      if (alive.length === 0) {
+        this.endRound();
+      }
     }
   }
 
@@ -330,10 +355,10 @@ export class Game {
     }
 
     if (input.wasPressed('w') || input.wasPressed('W') || input.wasPressed('ArrowUp')) {
-      this.pauseSelection = (this.pauseSelection + 2) % 3;
+      this.pauseSelection = (this.pauseSelection + 3) % 4;
     }
     if (input.wasPressed('s') || input.wasPressed('S') || input.wasPressed('ArrowDown')) {
-      this.pauseSelection = (this.pauseSelection + 1) % 3;
+      this.pauseSelection = (this.pauseSelection + 1) % 4;
     }
 
     if (this.pauseSelection === 0) {
@@ -348,6 +373,14 @@ export class Game {
         setMusicVolume(getMusicVolume() + 0.1);
       }
     } else if (this.pauseSelection === 2) {
+      if (input.wasPressed('a') || input.wasPressed('A') || input.wasPressed('ArrowLeft')) {
+        setMusicTrack((getMusicTrack() + 3) % 4);
+      }
+      if (input.wasPressed('d') || input.wasPressed('D') || input.wasPressed('ArrowRight') ||
+          input.wasPressed('Enter')) {
+        setMusicTrack((getMusicTrack() + 1) % 4);
+      }
+    } else if (this.pauseSelection === 3) {
       if (input.wasPressed('Enter')) {
         this.state = 'TITLE';
       }
@@ -398,6 +431,26 @@ export class Game {
           if (obs.isColliding() && circleCircle(player.x, player.y, player.radius, obs.x, obs.y, obs.radius)) {
             hit = true;
           }
+        } else if (obs.type === 'triangle') {
+          if (obs.checkCollision(player.x, player.y, player.radius)) {
+            hit = true;
+          }
+        } else if (obs.type === 'goldSpark') {
+          if (obs.checkCollision(player.x, player.y, player.radius)) {
+            hit = true;
+          }
+        } else if (obs.type === 'diagonalRect') {
+          if (obs.checkCollision(player.x, player.y, player.radius)) {
+            hit = true;
+          }
+        } else if (obs.type === 'novaCircle') {
+          if (obs.checkCollision(player.x, player.y, player.radius)) {
+            hit = true;
+          }
+        } else if (obs.type === 'fragmentTriangle') {
+          if (obs.checkCollision(player.x, player.y, player.radius)) {
+            hit = true;
+          }
         }
 
         if (hit) {
@@ -405,6 +458,13 @@ export class Game {
           playElimination();
           break;
         }
+      }
+    }
+
+    if (this.playerCount > 1) {
+      const alive = this.players.filter(p => p.alive);
+      if (alive.length === 1) {
+        this.lastSurvivor = alive[0].index;
       }
     }
   }
@@ -420,6 +480,9 @@ export class Game {
       const maxScore = Math.max(...alive.map(p => p.score));
       const best = alive.filter(p => p.score === maxScore);
       if (best.length === 1) winner = best[0].index;
+    } else if (this.playerCount > 1 && this.lastSurvivor !== null) {
+      this.players[this.lastSurvivor].score += 30;
+      winner = this.lastSurvivor;
     } else {
       const maxScore = Math.max(...this.players.map(p => p.score));
       const best = this.players.filter(p => p.score === maxScore);

@@ -325,9 +325,9 @@ export class Renderer {
       // Orange = unicorn horn
       if (layer === 'front') {
         ctx.shadowBlur = 8;
-        ctx.shadowColor = '#ffffffaa';
+        ctx.shadowColor = '#FF8C42';
         // Horn (spiral cone)
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#FF8C42';
         ctx.beginPath();
         ctx.moveTo(x - 3, y - r + 2);
         ctx.lineTo(x, y - r - 18);
@@ -335,7 +335,7 @@ export class Renderer {
         ctx.closePath();
         ctx.fill();
         // Spiral lines on horn
-        ctx.strokeStyle = '#ffcc88';
+        ctx.strokeStyle = '#ffddaa';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(x - 2, y - r);
@@ -383,7 +383,7 @@ export class Renderer {
     ctx.restore();
   }
 
-  drawPauseMenu(selection, musicVolume) {
+  drawPauseMenu(selection, musicVolume, musicTrack) {
     const ctx = this.ctx;
 
     ctx.save();
@@ -396,11 +396,11 @@ export class Renderer {
     ctx.shadowColor = '#aa44ff';
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 40px monospace';
-    ctx.fillText('PAUSED', CANVAS_WIDTH / 2, 200);
+    ctx.fillText('PAUSED', CANVAS_WIDTH / 2, 180);
 
     ctx.shadowBlur = 0;
-    const items = ['Resume', 'Music Volume', 'Quit to Menu'];
-    const baseY = 280;
+    const items = ['Resume', 'Music Volume', 'Soundtrack', 'Quit to Menu'];
+    const baseY = 250;
 
     for (let i = 0; i < items.length; i++) {
       const y = baseY + i * 60;
@@ -413,7 +413,6 @@ export class Renderer {
         const barWidth = 200;
         const barX = CANVAS_WIDTH / 2 - barWidth / 2;
         const barY = y + 15;
-        const filled = Math.round(musicVolume * 10);
 
         ctx.fillText(items[i], CANVAS_WIDTH / 2, y);
 
@@ -429,6 +428,15 @@ export class Renderer {
           ctx.font = '14px monospace';
           ctx.fillText('< A/D to adjust >', CANVAS_WIDTH / 2, barY + 38);
         }
+      } else if (i === 2) {
+        const trackNames = ['Track A', 'Track B', 'Track C', 'Track D'];
+        ctx.fillText(`${items[i]}: < ${trackNames[musicTrack]} >`, CANVAS_WIDTH / 2, y);
+
+        if (active) {
+          ctx.fillStyle = '#888888';
+          ctx.font = '14px monospace';
+          ctx.fillText('< A/D to switch >', CANVAS_WIDTH / 2, y + 25);
+        }
       } else {
         ctx.fillText(active ? `> ${items[i]} <` : items[i], CANVAS_WIDTH / 2, y);
       }
@@ -436,12 +444,12 @@ export class Renderer {
 
     ctx.fillStyle = '#555555';
     ctx.font = '14px monospace';
-    ctx.fillText('SPACE or ESC to resume', CANVAS_WIDTH / 2, 500);
+    ctx.fillText('SPACE or ESC to resume', CANVAS_WIDTH / 2, 520);
 
     ctx.restore();
   }
 
-  drawTitleScreen(playerCount, difficultyIndex) {
+  drawTitleScreen(playerCount, difficultyIndex, menuSelection, musicTrack, musicVolume) {
     const ctx = this.ctx;
     this.clear();
     this.drawBackground(0);
@@ -453,29 +461,57 @@ export class Renderer {
     ctx.shadowColor = '#aa44ff';
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 52px monospace';
-    ctx.fillText('DODGE ARENA', CANVAS_WIDTH / 2, 150);
+    ctx.fillText('DODGE ARENA', CANVAS_WIDTH / 2, 120);
 
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#cccccc';
-    ctx.font = '18px monospace';
-    ctx.fillText('Players', CANVAS_WIDTH / 2, 250);
 
-    ctx.font = 'bold 28px monospace';
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(`< ${playerCount} >`, CANVAS_WIDTH / 2, 285);
+    const active0 = menuSelection === 0;
+    ctx.fillStyle = active0 ? '#ffffff' : '#888888';
+    ctx.font = `${active0 ? 'bold ' : ''}16px monospace`;
+    ctx.fillText('Players', CANVAS_WIDTH / 2, 200);
+    ctx.font = `${active0 ? 'bold ' : ''}26px monospace`;
+    ctx.fillStyle = active0 ? '#ffffff' : '#666666';
+    ctx.fillText(`< ${playerCount} >`, CANVAS_WIDTH / 2, 230);
 
-    ctx.font = '18px monospace';
-    ctx.fillStyle = '#cccccc';
-    ctx.fillText('Difficulty', CANVAS_WIDTH / 2, 340);
-
+    const active1 = menuSelection === 1;
+    ctx.fillStyle = active1 ? '#ffffff' : '#888888';
+    ctx.font = `${active1 ? 'bold ' : ''}16px monospace`;
+    ctx.fillText('Difficulty', CANVAS_WIDTH / 2, 275);
     const diffKey = DIFFICULTY_KEYS[difficultyIndex];
-    ctx.font = 'bold 28px monospace';
-    ctx.fillStyle = diffKey === 'nightmare' ? '#ff4444' : diffKey === 'hard' ? '#ffaa00' : '#44ff44';
-    ctx.fillText(`< ${DIFFICULTY[diffKey].label} >`, CANVAS_WIDTH / 2, 375);
+    ctx.font = `${active1 ? 'bold ' : ''}26px monospace`;
+    if (active1) {
+      ctx.fillStyle = diffKey === 'ghost' ? '#aaddff' : diffKey === 'nightmare' ? '#ff4444' : diffKey === 'hard' ? '#ffaa00' : '#44ff44';
+    } else {
+      ctx.fillStyle = '#666666';
+    }
+    ctx.fillText(`< ${DIFFICULTY[diffKey].label} >`, CANVAS_WIDTH / 2, 305);
 
-    ctx.font = '16px monospace';
-    ctx.fillStyle = '#888888';
-    ctx.fillText('Arrows to navigate • ENTER to start', CANVAS_WIDTH / 2, 450);
+    const active2 = menuSelection === 2;
+    const trackNames = ['Track A', 'Track B', 'Track C', 'Track D'];
+    ctx.fillStyle = active2 ? '#ffffff' : '#888888';
+    ctx.font = `${active2 ? 'bold ' : ''}16px monospace`;
+    ctx.fillText('Soundtrack', CANVAS_WIDTH / 2, 350);
+    ctx.font = `${active2 ? 'bold ' : ''}26px monospace`;
+    ctx.fillStyle = active2 ? '#ffffff' : '#666666';
+    ctx.fillText(`< ${trackNames[musicTrack]} >`, CANVAS_WIDTH / 2, 380);
+
+    const active3 = menuSelection === 3;
+    ctx.fillStyle = active3 ? '#ffffff' : '#888888';
+    ctx.font = `${active3 ? 'bold ' : ''}16px monospace`;
+    ctx.fillText('Volume', CANVAS_WIDTH / 2, 425);
+
+    const barWidth = 180;
+    const barX = CANVAS_WIDTH / 2 - barWidth / 2;
+    const barY = 438;
+    ctx.strokeStyle = active3 ? '#aa44ff' : '#444444';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(barX, barY, barWidth, 14);
+    ctx.fillStyle = active3 ? '#aa44ff' : '#555555';
+    ctx.fillRect(barX + 2, barY + 2, (barWidth - 4) * musicVolume, 10);
+
+    ctx.font = '14px monospace';
+    ctx.fillStyle = '#555555';
+    ctx.fillText('W/S to navigate • A/D to adjust • ENTER to start', CANVAS_WIDTH / 2, 510);
 
     ctx.restore();
   }

@@ -6,6 +6,11 @@ import { Swirl } from './swirl.js';
 import { Star } from './star.js';
 import { Lightning } from './lightning.js';
 import { RainDrop } from './rainDrop.js';
+import { Triangle } from './triangle.js';
+import { GoldSpark } from './goldSpark.js';
+import { DiagonalRect } from './diagonalRect.js';
+import { NovaCircle } from './novaCircle.js';
+import { FragmentTriangle } from './fragmentTriangle.js';
 
 export class ObstacleManager {
   constructor() {
@@ -31,7 +36,7 @@ export class ObstacleManager {
   }
 
   getSpeedMultiplier() {
-    if (this.difficulty === 'nightmare') return 1.5;
+    if (this.difficulty === 'ghost' || this.difficulty === 'nightmare') return 1.5;
     if (this.difficulty === 'hard') return 1.25;
     return 1.0;
   }
@@ -53,63 +58,91 @@ export class ObstacleManager {
 
   spawn() {
     const roll = Math.random();
-    let starChance, swirlChance, stormChance;
 
-    if (this.difficulty === 'nightmare') {
-      starChance = 0.10;
-      swirlChance = 0.20;
-      stormChance = 0.24;
-    } else if (this.difficulty === 'hard') {
-      starChance = 0.05;
-      swirlChance = 0.15;
-      stormChance = 0.19;
-    } else {
-      starChance = 0.03;
-      swirlChance = 0.12;
-      stormChance = 0;
-    }
-
-    let laserChance;
-    if (this.difficulty === 'nightmare') {
-      laserChance = 0.35;
-    } else if (this.difficulty === 'hard') {
-      laserChance = 0.30;
-    } else {
-      laserChance = 0.25;
-    }
-
-    if (roll < 0.04) {
-      this.obstacles.push(new Lightning());
-    } else if (roll < 0.10) {
-      this.spawnRain();
-    } else if (roll < starChance + 0.10) {
-      if (this.difficulty === 'nightmare') {
+    if (this.difficulty === 'nightmare' || this.difficulty === 'ghost') {
+      if (roll < 0.03) {
+        this.obstacles.push(new GoldSpark());
+      } else if (roll < 0.07) {
+        this.obstacles.push(new Lightning());
+      } else if (roll < 0.12) {
+        this.spawnRain();
+      } else if (roll < 0.22) {
+        this.obstacles.push(new NovaCircle());
+      } else if (roll < 0.29) {
         if (Math.random() < 0.35) {
-          // Random position star
           this.obstacles.push(new Star(undefined, true));
           this.obstacles.push(new Star(undefined, true));
         } else {
-          // Paired stars on opposite corners
           const pair = Math.random() > 0.5 ? [0, 3] : [1, 2];
           this.obstacles.push(new Star(pair[0]));
           this.obstacles.push(new Star(pair[1]));
         }
+      } else if (roll < 0.36) {
+        this.obstacles.push(new Swirl());
+      } else if (roll < 0.39) {
+        this.spawnCircleStorm();
+      } else if (roll < 0.44) {
+        this.obstacles.push(new Triangle(this.difficulty));
+      } else if (roll < 0.56) {
+        this.obstacles.push(new FragmentTriangle(undefined, undefined, undefined, undefined, false, this.difficulty));
+      } else if (roll < 0.66) {
+        this.obstacles.push(new DiagonalRect(this.getSpeedMultiplier()));
+      } else if (roll < 0.72) {
+        const useVertical = this.round >= 3 && Math.random() < 0.4;
+        this.obstacles.push(new Rectangle(useVertical, false, this.getSpeedMultiplier()));
+      } else if (roll < 0.77) {
+        this.obstacles.push(new Rectangle(true, true, this.getSpeedMultiplier()));
+      } else if (roll < 0.88) {
+        this.obstacles.push(new CircleStrike());
       } else {
-        this.obstacles.push(new Star());
+        this.obstacles.push(new Laser(this.getSpeedMultiplier()));
       }
-    } else if (roll < swirlChance) {
-      this.obstacles.push(new Swirl());
-    } else if (roll < stormChance) {
-      this.spawnCircleStorm();
-    } else if (roll < 0.35) {
-      const useVertical = this.round >= 3 && Math.random() < 0.4;
-      this.obstacles.push(new Rectangle(useVertical, false, this.getSpeedMultiplier()));
-    } else if (roll < 0.5) {
-      this.obstacles.push(new Rectangle(true, true, this.getSpeedMultiplier()));
-    } else if (roll < (1 - laserChance)) {
-      this.obstacles.push(new CircleStrike());
+    } else if (this.difficulty === 'hard') {
+      if (roll < 0.04) {
+        this.obstacles.push(new Lightning());
+      } else if (roll < 0.10) {
+        this.spawnRain();
+      } else if (roll < 0.16) {
+        this.obstacles.push(new Star());
+      } else if (roll < 0.24) {
+        this.obstacles.push(new Swirl());
+      } else if (roll < 0.30) {
+        this.obstacles.push(new Triangle(this.difficulty));
+      } else if (roll < 0.40) {
+        this.obstacles.push(new FragmentTriangle(undefined, undefined, undefined, undefined, false, this.difficulty));
+      } else if (roll < 0.50) {
+        this.obstacles.push(new DiagonalRect(this.getSpeedMultiplier()));
+      } else if (roll < 0.58) {
+        const useVertical = this.round >= 3 && Math.random() < 0.4;
+        this.obstacles.push(new Rectangle(useVertical, false, this.getSpeedMultiplier()));
+      } else if (roll < 0.64) {
+        this.obstacles.push(new Rectangle(true, true, this.getSpeedMultiplier()));
+      } else if (roll < 0.80) {
+        this.obstacles.push(new CircleStrike());
+      } else {
+        this.obstacles.push(new Laser(this.getSpeedMultiplier()));
+      }
     } else {
-      this.obstacles.push(new Laser(this.getSpeedMultiplier()));
+      if (roll < 0.04) {
+        this.obstacles.push(new Lightning());
+      } else if (roll < 0.10) {
+        this.spawnRain();
+      } else if (roll < 0.15) {
+        this.obstacles.push(new Triangle(this.difficulty));
+      } else if (roll < 0.20) {
+        this.obstacles.push(new FragmentTriangle(undefined, undefined, undefined, undefined, false, this.difficulty));
+      } else if (roll < 0.28) {
+        this.obstacles.push(new DiagonalRect(this.getSpeedMultiplier()));
+      } else if (roll < 0.42) {
+        const useVertical = this.round >= 3 && Math.random() < 0.4;
+        this.obstacles.push(new Rectangle(useVertical, false, this.getSpeedMultiplier()));
+      } else if (roll < 0.50) {
+        this.obstacles.push(new Rectangle(true, true, this.getSpeedMultiplier()));
+      } else if (roll < 0.75) {
+        this.obstacles.push(new CircleStrike());
+      } else {
+        this.obstacles.push(new Laser(this.getSpeedMultiplier()));
+      }
     }
   }
 
@@ -123,8 +156,16 @@ export class ObstacleManager {
       this.spawn();
     }
 
+    const newObstacles = [];
     for (const obs of this.obstacles) {
       obs.update(dt);
+      if (obs.type === 'fragmentTriangle' && obs.children.length > 0) {
+        newObstacles.push(...obs.getChildren());
+      }
+    }
+
+    if (newObstacles.length > 0) {
+      this.obstacles.push(...newObstacles);
     }
 
     this.obstacles = this.obstacles.filter(o => !o.done);
