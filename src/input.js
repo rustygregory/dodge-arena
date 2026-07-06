@@ -4,6 +4,13 @@ class InputManager {
     this.keysPressed = new Set();
     this.onFirstInput = null;
 
+    const triggerFirstInput = () => {
+      if (this.onFirstInput) {
+        this.onFirstInput();
+        this.onFirstInput = null;
+      }
+    };
+
     window.addEventListener('keydown', (e) => {
       if (!this.keysDown.has(e.key)) {
         this.keysPressed.add(e.key);
@@ -14,15 +21,15 @@ class InputManager {
         e.preventDefault();
       }
 
-      if (this.onFirstInput) {
-        this.onFirstInput();
-        this.onFirstInput = null;
-      }
+      triggerFirstInput();
     });
 
     window.addEventListener('keyup', (e) => {
       this.keysDown.delete(e.key);
     });
+
+    window.addEventListener('click', triggerFirstInput);
+    window.addEventListener('touchstart', triggerFirstInput);
   }
 
   isDown(key) {

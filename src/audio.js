@@ -22,13 +22,22 @@ function getContext() {
 
 export function resumeAudio() {
   const ctx = getContext();
-  if (ctx.state === 'suspended') {
+  if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
     ctx.resume().then(() => {
+      warmUpContext(ctx);
       if (!musicPlaying) startMusic();
     });
   } else {
     if (!musicPlaying) startMusic();
   }
+}
+
+function warmUpContext(ctx) {
+  const buffer = ctx.createBuffer(1, 1, ctx.sampleRate);
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(ctx.destination);
+  source.start(0);
 }
 
 export function getMusicVolume() {
@@ -61,8 +70,9 @@ export function setMusicTrack(track) {
 export function startMusic() {
   if (musicPlaying) return;
   const ctx = getContext();
-  if (ctx.state === 'suspended') {
+  if (ctx.state === 'suspended' || ctx.state === 'interrupted') {
     ctx.resume().then(() => {
+      warmUpContext(ctx);
       if (!musicPlaying) {
         musicPlaying = true;
         scheduleMusic();
